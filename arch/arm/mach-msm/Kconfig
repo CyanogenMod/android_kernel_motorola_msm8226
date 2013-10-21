@@ -1905,12 +1905,19 @@ config MSM_DEVFREQ_CPUBW
 	select DEVFREQ_GOV_POWERSAVE
 	select DEVFREQ_GOV_USERSPACE
 	select DEVFREQ_GOV_MSM_CPUFREQ
+
 	default n
 	help
 	  Different devfreq governors use this devfreq device to make CPU to
 	  DDR IB/AB bandwidth votes. This driver provides a SoC topology
 	  agnostic interface to so that some of the devfreq governors can be
 	  shared across SoCs.
+
+config INTELLI_PLUG
+	bool "Enable intelli-plug cpu hotplug driver"
+	default n
+	help
+	  Generic Intelli-plug cpu hotplug driver for ARM SOCs
 
 config MSM_AVS_HW
 	bool "Enable Adaptive Voltage Scaling (AVS)"
