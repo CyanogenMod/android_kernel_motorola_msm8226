@@ -145,6 +145,18 @@ config CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND
 	  you to get a full dynamic frequency capable system by simply
 	  loading your cpufreq low-level hardware driver.
 
+config CPU_FREQ_DEFAULT_GOV_BADASS
+	bool "badass"
+	select CPU_FREQ_GOV_BADASS
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
+	  Use the CPUFreq governor 'badass' as default. This allows
+	  you to get a full dynamic frequency capable system by simply
+	  loading your cpufreq low-level hardware driver.
+	  Be aware that not all cpufreq drivers support the badass
+	  governor. If unsure have a look at the help section of the
+	  driver. Fallback governor will be the performance governor.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -290,6 +302,19 @@ config CPU_FREQ_GOV_INTELLIDEMAND
           The support for this governor depends on CPU capability to
           do fast frequency switching (i.e, very low latency frequency
           transitions).
+
+config CPU_FREQ_GOV_BADASS
+	tristate "'badass' cpufreq policy governor"
+	select CPU_FREQ_TABLE
+	help
+	  'badass' - This driver adds a dynamic cpufreq policy governor.
+	  The governor does a periodic polling and
+	  changes frequency based on the CPU utilization.
+	  The support for this governor depends on CPU capability to
+	  do fast frequency switching (i.e, very low latency frequency	  transitions).
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_badass.
+	  If in doubt, say N.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
