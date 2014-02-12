@@ -142,6 +142,11 @@ config CPU_FREQ_DEFAULT_GOV_BADASS
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
 
+config CPU_FREQ_DEFAULT_GOV_DANCEDANCE
+	bool "dancedance"
+	select CPU_FREQ_GOV_DANCEDANCE
+	help
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -286,6 +291,10 @@ config CPU_FREQ_GOV_BADASS
 	  To compile this driver as a module, choose M here: the
 	  module will be called cpufreq_badass.
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_DANCEDANCE
+	tristate "'dancedance' cpufreq governor"
+	depends on CPU_FREQ
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
