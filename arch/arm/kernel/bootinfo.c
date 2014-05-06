@@ -175,7 +175,7 @@ static void convert_to_upper(char *str)
 #define ECC_BLOCK_SIZE	128
 
 #define BOOTINFO_BCK_BUF_ALIGN	ECC_BLOCK_SIZE
-#define BOOTINFO_BCK_MAGIC	0x626f6f74696e666f	/* bootinfo */
+#define BOOTINFO_BCK_MAGIC	0x626f6f74696e666ll	/* bootinfo */
 #define BOOTINFO_LKMSG(fmt, args...) do {		\
 	persistent_ram_ext_oldbuf_print(fmt, ##args);	\
 } while (0)
