@@ -1,0 +1,11 @@
+ui_print("Furnace Kernel for Moto G");
+ui_print("Installing kernel...");
+package_extract_file("boot.img", "/dev/block/platform/msm_sdcc.1/by-name/boot");
+ui_print("Installing modules...");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
+delete_recursive("/system/lib/modules");
+package_extract_dir("system", "/system");
+set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
+symlink("/system/lib/modules/pronto/pronto_wlan.ko", "/system/lib/modules/wlan.ko");
+unmount("/system");
+ui_print("Done!");
