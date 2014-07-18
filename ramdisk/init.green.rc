@@ -1,0 +1,6 @@
+# Green Extras
+
+service green-sh /system/bin/sh /init.green.sh
+	class late_start
+	user root
+	oneshot
