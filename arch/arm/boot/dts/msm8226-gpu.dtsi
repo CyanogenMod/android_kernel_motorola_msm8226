@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,7 +22,7 @@
 
 		qcom,chipid = <0x03000510>;
 
-		qcom,initial-pwrlevel = <1>;
+		qcom,initial-pwrlevel = <2>;
 
 		qcom,idle-timeout = <8>; //<HZ/12>
 		qcom,strtstp-sleepwake;
@@ -30,13 +30,14 @@
 
 		/* Bus Scale Settings */
 		qcom,msm-bus,name = "grp3d";
-		qcom,msm-bus,num-cases = <4>;
+		qcom,msm-bus,num-cases = <5>;
 		qcom,msm-bus,num-paths = <2>;
 		qcom,msm-bus,vectors-KBps =
 			<26 512 0 0>, <89 604 0 0>,
-			<26 512 800000 1600000>, <89 604 0 3200000>,
-			<26 512 1600000 3200000>, <89 604 0 5120000>,
-			<26 512 2128000 4256000>, <89 604 0 6400000>;
+			<26 512 0 1800000>, <89 604 0 4000000>,
+			<26 512 0 4000000>, <89 604 0 5440000>,
+			<26 512 0 4800000>, <89 604 0 7200000>,
+			<26 512 0 4960000>, <89 604 0 7560000>;
 
 
 		/* GDSC oxili regulators */
@@ -47,9 +48,6 @@
 		/* IOMMU Data */
 		iommu = <&kgsl_iommu>;
 
-		/* CPU latency parameter */
-		qcom,pm-qos-latency = <701>;
-
 		/* Power levels */
 		qcom,gpu-pwrlevels {
 			#address-cells = <1>;
@@ -59,28 +57,35 @@
 
 			qcom,gpu-pwrlevel@0 {
 				reg = <0>;
-				qcom,gpu-freq = <450000000>;
-				qcom,bus-freq = <3>;
+				qcom,gpu-freq = <533000000>;
+				qcom,bus-freq = <4>;
 				qcom,io-fraction = <0>;
 			};
 
 			qcom,gpu-pwrlevel@1 {
 				reg = <1>;
-				qcom,gpu-freq = <320000000>;
-				qcom,bus-freq = <2>;
-				qcom,io-fraction = <33>;
+				qcom,gpu-freq = <450000000>;
+				qcom,bus-freq = <3>;
+				qcom,io-fraction = <0>;
 			};
 
 			qcom,gpu-pwrlevel@2 {
 				reg = <2>;
-				qcom,gpu-freq = <200000000>;
-				qcom,bus-freq = <1>;
-				qcom,io-fraction = <100>;
+				qcom,gpu-freq = <333000000>;
+				qcom,bus-freq = <2>;
+				qcom,io-fraction = <33>;
 			};
 
 			qcom,gpu-pwrlevel@3 {
 				reg = <3>;
-				qcom,gpu-freq = <19000000>;
+				qcom,gpu-freq = <270000000>;
+				qcom,bus-freq = <1>;
+				qcom,io-fraction = <100>;
+			};
+
+			qcom,gpu-pwrlevel@4 {
+				reg = <4>;
+				qcom,gpu-freq = <27000000>;
 				qcom,bus-freq = <0>;
 				qcom,io-fraction = <0>;
 			};
@@ -121,7 +126,7 @@
 			qcom,energy-leakage-coeff-d = <0>;
 
 			qcom,power-current-temp = <25>;
-			qcom,power-num-freq = <4>;
+			qcom,power-num-freq = <5>;
 
 			qcom,dcvs-freq@0 {
 				reg = <0>;
@@ -152,6 +157,15 @@
 
 			qcom,dcvs-freq@3 {
 				reg = <3>;
+				qcom,freq = <0>;
+				qcom,voltage = <0>;
+				qcom,is_trans_level = <0>;
+				qcom,active-energy-offset = <100>;
+				qcom,leakage-energy-offset = <0>;
+			};
+
+			qcom,dcvs-freq@4 {
+				reg = <4>;
 				qcom,freq = <0>;
 				qcom,voltage = <0>;
 				qcom,is_trans_level = <0>;
