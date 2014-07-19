@@ -1,0 +1,11 @@
+--- kernel/rtmutex-debug.h
++++ kernel/rtmutex-debug.h
+@@ -31,3 +31,8 @@
+ {
+ 	return (waiter != NULL);
+ }
++
++static inline void rt_mutex_print_deadlock(struct rt_mutex_waiter *w)
++{
++	debug_rt_mutex_print_deadlock(w);
++}

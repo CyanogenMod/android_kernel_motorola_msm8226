@@ -1,0 +1,12 @@
+--- drivers/hwmon/adm1029.c
++++ drivers/hwmon/adm1029.c
+@@ -231,6 +231,9 @@
+ 	/* Update the value */
+ 	reg = (reg & 0x3F) | (val << 6);
+ 
++	/* Update the cache */
++	data->fan_div[attr->index] = reg;
++
+ 	/* Write value */
+ 	i2c_smbus_write_byte_data(client,
+ 				  ADM1029_REG_FAN_DIV[attr->index], reg);
