@@ -20,7 +20,7 @@
  *
  * SMP support based on mod by faux123
  *
- * For a general overview of smartassV2 see the relavent part in
+ * For a general overview of smartass2 see the relavent part in
  * Documentation/cpu-freq/governors.txt
  *
  */
@@ -34,7 +34,7 @@
 #include <linux/workqueue.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
-#include <asm/cputime.h>
+#include <linux/asm/cputime.h>
 #include <linux/powersuspend.h>
 
 
@@ -167,7 +167,7 @@ static int cpufreq_governor_smartass(struct cpufreq_policy *policy,
 static
 #endif
 struct cpufreq_governor cpufreq_gov_smartass2 = {
-	.name = "smartassV2",
+	.name = "smartass2",
 	.governor = cpufreq_governor_smartass,
 	.max_transition_latency = 9000000,
 	.owner = THIS_MODULE,
@@ -659,7 +659,7 @@ static struct attribute * smartass_attributes[] = {
 
 static struct attribute_group smartass_attr_group = {
 	.attrs = smartass_attributes,
-	.name = "smartassV2",
+	.name = "smartass2",
 };
 
 static int cpufreq_governor_smartass(struct cpufreq_policy *new_policy,
