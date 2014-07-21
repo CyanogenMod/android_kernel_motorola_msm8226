@@ -103,11 +103,6 @@ service time_daemon /system/bin/time_daemon
    user root
    group root
 
-service mpdecision /system/bin/mpdecision --avg_comp
-   user root
-   group root system
-   disabled
-
 #start GNSS/Sensor interface daemon
 service gsiff_daemon /system/bin/gsiff_daemon
    class late_start
