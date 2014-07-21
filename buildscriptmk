@@ -6,57 +6,20 @@
 build=/home/yoshishapow/Green_Machine
 kernel="The-Green-Machine"
 version="1.2.0"
-variant="cmvariants"
-ramdisk=ramdisk_cm
-toolchain=/home/yoshishapow/linaro_toolchain/bin/
-toolchain2="arm-eabi-"
-config="green_machine_defconfig"
+variant="mokee"
+ramdisk=ramdisk_mk
 kerneltype="zImage-dtb"
-jobcount="-j5"
 ps=2048
 base=0x00000000
 ramdisk_offset=0x01000000
 tags_offset=0x00000100
 cmdline="console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 vmalloc=400M utags.blkdev=/dev/block/platform/msm_sdcc.1/by-name/utags androidboot.write_protect=0 zcache androidboot.selinux=permissive"
 
-if [ "$1" = "local" ]; then
-	build=/home/yoshishapow/android_kernel_motorola_msm8226
-	toolchain=/home/yoshishapow/linaro_toolchain/bin/
-fi
-
 rm -rf out
 mkdir out
 mkdir out/tmp
-echo "Checking for build..."
-if [ -f ozip/boot.img ]; then
-	read -p "Previous build found, clean working directory..(y/n)? : " cchoice
-	case "$cchoice" in
-		y|Y )
-			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			echo "  CLEAN   ozip"
-			rm -rf ozip/boot.img
-			rm -rf arch/arm/boot/"$kerneltype"
-			mkdir -p ozip/system/lib/modules
-			make clean && make mrproper
-			echo "Working directory cleaned...";;
-		n|N )
-			exit 0;;
-		* )
-			echo "Invalid...";;
-	esac
-	read -p "Begin build now..(y/n)? : " dchoice
-	case "$dchoice" in
-		y|Y)
-			make "$config"
-			make "$jobcount"
-			exit 0;;
-		n|N )
-			exit 0;;
-		* )
-			echo "Invalid...";;
-	esac
-fi
+
+
 echo "Extracting files..."
 if [ -f arch/arm/boot/"$kerneltype" ]; then
 	cp arch/arm/boot/"$kerneltype" out
@@ -75,37 +38,6 @@ if [ -f arch/arm/boot/"$kerneltype" ]; then
 	else
 		rm -rf ozip/system
 	fi
-else
-	echo "Nothing has been made..."
-	read -p "Clean working directory..(y/n)? : " achoice
-	case "$achoice" in
-		y|Y )
-			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			if [ -f arch/arm/boot/"$kerneltype" ]; then
-				echo "  CLEAN   ozip"
-			fi
-			rm -rf ozip/boot.img
-			rm -rf arch/arm/boot/"$kerneltype"
-			mkdir -p ozip/system/lib/modules
-			make clean && make mrproper
-			echo "Working directory cleaned...";;
-		n|N )
-			exit 0;;
-		* )
-			echo "Invalid...";;
-	esac
-	read -p "Begin build now..(y/n)? : " bchoice
-	case "$bchoice" in
-		y|Y)
-			make "$config"
-			make "$jobcount"
-			exit 0;;
-		n|N )
-			exit 0;;
-		* )
-			echo "Invalid...";;
-	esac
 fi
 
 echo "Making ramdisk..."
