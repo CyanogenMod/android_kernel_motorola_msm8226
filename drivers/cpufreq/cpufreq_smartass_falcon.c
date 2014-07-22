@@ -1,5 +1,5 @@
 /*
- * drivers/cpufreq/cpufreq_smartassH3.c
+ * drivers/cpufreq/cpufreq_smartass_falcon.c
  *
  * Copyright (C) 2010 Google, Inc.
  *
@@ -13,12 +13,8 @@
  * GNU General Public License for more details.
  *
  * Author: Erasmux
- *
- * Based on the interactive governor By Mike Chan (mike@android.com)
- * which was adaptated to 2.6.29 kernel by Nadlabak (pavel@doshaska.net)
- *
- * For a general overview of smartassV2 see the relavent part in
- * Documentation/cpu-freq/governors.txt
+ * Tweaked by YoshiShaPow for Moto G
+ * Performance Version
  *
  */
 
@@ -43,7 +39,7 @@
  * towards the ideal frequency and slower after it has passed it. Similarly,
  * lowering the frequency towards the ideal frequency is faster than below it.
  */
-#define DEFAULT_AWAKE_IDEAL_FREQ 998400
+#define DEFAULT_AWAKE_IDEAL_FREQ 787200
 static unsigned int awake_ideal_freq;
 
 /*
@@ -60,7 +56,7 @@ static unsigned int sleep_ideal_freq;
  * Zero disables and causes to always jump straight to max frequency.
  * When below the ideal freqeuncy we always ramp up to the ideal freq.
  */
-#define DEFAULT_RAMP_UP_STEP 100000
+#define DEFAULT_RAMP_UP_STEP 256000
 static unsigned int ramp_up_step;
 
 /*
@@ -68,19 +64,19 @@ static unsigned int ramp_up_step;
  * Zero disables and will calculate ramp down according to load heuristic.
  * When above the ideal freqeuncy we always ramp down to the ideal freq.
  */
-#define DEFAULT_RAMP_DOWN_STEP 100000
+#define DEFAULT_RAMP_DOWN_STEP 256000
 static unsigned int ramp_down_step;
 
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 90
+#define DEFAULT_MAX_CPU_LOAD 40
 static unsigned long max_cpu_load;
 
 /*
  * CPU freq will be decreased if measured load < min_cpu_load;
  */
-#define DEFAULT_MIN_CPU_LOAD 85
+#define DEFAULT_MIN_CPU_LOAD 25
 static unsigned long min_cpu_load;
 
 /*
@@ -101,7 +97,7 @@ static unsigned long down_rate_us;
  * The frequency to set when waking up from sleep.
  * When sleep_ideal_freq=0 this will have no effect.
  */
-#define DEFAULT_SLEEP_WAKEUP_FREQ 1190400
+#define DEFAULT_SLEEP_WAKEUP_FREQ 9999999
 static unsigned int sleep_wakeup_freq;
 
 /*
@@ -158,15 +154,15 @@ enum {
  */
 static unsigned long debug_mask;
 
-static int cpufreq_governor_smartass_h3(struct cpufreq_policy *policy,
+static int cpufreq_governor_smartass_falcon(struct cpufreq_policy *policy,
 		unsigned int event);
 
-#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTASSH3
+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTASSFALCON
 static
 #endif
-struct cpufreq_governor cpufreq_gov_smartass_h3 = {
-	.name = "smartassH3",
-	.governor = cpufreq_governor_smartass_h3,
+struct cpufreq_governor cpufreq_gov_smartass_falcon = {
+	.name = "smartassfalcon",
+	.governor = cpufreq_governor_smartass_falcon,
 	.max_transition_latency = 9000000,
 	.owner = THIS_MODULE,
 };
@@ -688,10 +684,10 @@ static struct attribute * smartass_attributes[] = {
 
 static struct attribute_group smartass_attr_group = {
 	.attrs = smartass_attributes,
-	.name = "smartassH3",
+	.name = "smartassfalcon",
 };
 
-static int cpufreq_governor_smartass_h3(struct cpufreq_policy *new_policy,
+static int cpufreq_governor_smartass_falcon(struct cpufreq_policy *new_policy,
 		unsigned int event)
 {
 	unsigned int cpu = new_policy->cpu;
@@ -873,10 +869,10 @@ static int __init cpufreq_smartass_init(void)
 
 	register_power_suspend(&smartass_power_suspend);
 
-	return cpufreq_register_governor(&cpufreq_gov_smartass_h3);
+	return cpufreq_register_governor(&cpufreq_gov_smartass_falcon);
 }
 
-#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTASSH3
+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_SMARTASSFALCON
 fs_initcall(cpufreq_smartass_init);
 #else
 module_init(cpufreq_smartass_init);
@@ -884,7 +880,7 @@ module_init(cpufreq_smartass_init);
 
 static void __exit cpufreq_smartass_exit(void)
 {
-	cpufreq_unregister_governor(&cpufreq_gov_smartass_h3);
+	cpufreq_unregister_governor(&cpufreq_gov_smartass_falcon);
 	destroy_workqueue(up_wq);
 	destroy_workqueue(down_wq);
 }
@@ -892,5 +888,5 @@ static void __exit cpufreq_smartass_exit(void)
 module_exit(cpufreq_smartass_exit);
 
 MODULE_AUTHOR ("Erasmux");
-MODULE_DESCRIPTION ("'cpufreq_smartassH3' - A smart cpufreq governor");
+MODULE_DESCRIPTION ("'cpufreq_smartassfalcon' - A smart cpufreq governor");
 MODULE_LICENSE ("GPL");
