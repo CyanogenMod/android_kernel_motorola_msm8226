@@ -1,16 +1,23 @@
 #!/bin/bash
-# If you're using my script, all you need to do is edit the following lines to work for you.
+
+# Original scripting authored by @YoshiShaPow@XDA
+# Edited for 'D4rk Matter' by @ReaperXL2@XDA
+
+# If you're using this script, for it to work for you, all you need to do is edit the lines below to match your build environment.
+
 # Final zip will exist in "build" as "furnace-1.0.0-aosp_hammerhead.zip" for example
+
 # If you are using a non-appended dt.image, you will need to add "--dt path/to/dt.img" and
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
+
 build=/home/reaperxl2/Torque_kernel_GM-Hybrid
-kernel="Torque-kernel-[Green-Machine-Hybrid]"
-version="v1.0"
+kernel="Torque-[Green-Machine-Hybrid]"
+version="v1.2"
 variant="cm_unified"
 ramdisk=ramdisk_cm
 toolchain=/home/reaperxl2/tools/linaro/bin/arm-cortex_a7-linux-gnueabihf-
 toolchain2=""
-config="green_machine_defconfig"
+config="d4rk_matter_defconfig"
 kerneltype="zImage-dtb"
 jobcount="-j4"
 ps=2048
