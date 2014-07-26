@@ -91,3 +91,4 @@ obj-$(CONFIG_SENSORS_BMA2X2) += bstclass.o
 obj-$(CONFIG_SENSORS_BMA2X2) += bma2x2.o
 obj-$(CONFIG_SENSORS_BMG) += bmg160_driver.o bmg160.o
 obj-$(CONFIG_SENSORS_BMM050) += bmm050_driver.o bmm050.o
+obj-$(CONFIG_HPH_HIGH_PERF) += sound_control.o
