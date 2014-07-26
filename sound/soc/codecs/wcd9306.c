@@ -2684,12 +2684,12 @@ static int tapan_hph_pa_event(struct snd_soc_dapm_widget *w,
 	if (w->shift == 5) {
 		e_pre_on = WCD9XXX_EVENT_PRE_HPHL_PA_ON;
 		e_post_off = WCD9XXX_EVENT_POST_HPHL_PA_OFF;
-		req_clsh_state = WCD9XXX_CLSH_STATE_HPHR;
+		req_clsh_state = WCD9XXX_CLSH_STATE_HPHL;
 		req_clsab_state = WCD9XXX_CLSAB_STATE_HPHL;
 	} else if (w->shift == 4) {
 		e_pre_on = WCD9XXX_EVENT_PRE_HPHR_PA_ON;
 		e_post_off = WCD9XXX_EVENT_POST_HPHR_PA_OFF;
-		req_clsh_state = WCD9XXX_CLSH_STATE_HPHL;
+		req_clsh_state = WCD9XXX_CLSH_STATE_HPHR;
 		req_clsab_state = WCD9XXX_CLSAB_STATE_HPHR;
 	} else {
 		pr_err("%s: Invalid w->shift %d\n", __func__, w->shift);
