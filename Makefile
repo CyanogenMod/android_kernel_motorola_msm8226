@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 4
 SUBLEVEL = 99
-EXTRAVERSION = -rc2
+EXTRAVERSION = -torque-kernel-v1-@reaperxl2
 NAME = Saber-toothed Squirrel
 
 # *DOCUMENTATION*

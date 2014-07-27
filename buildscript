@@ -3,16 +3,16 @@
 # Final zip will exist in "build" as "furnace-1.0.0-aosp_hammerhead.zip" for example
 # If you are using a non-appended dt.image, you will need to add "--dt path/to/dt.img" and
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
-build=/home/yoshishapow/Green_Machine
-kernel="The-Green-Machine"
-version="1.2.5"
-variant="cmvariants"
+build=/home/reaperxl2/Torque_kernel_GM-Hybrid
+kernel="Torque-kernel-[Green-Machine-Hybrid]"
+version="v1.0"
+variant="cm_unified"
 ramdisk=ramdisk_cm
-toolchain=/home/yoshishapow/linaro_toolchain/bin/
-toolchain2="arm-eabi-"
+toolchain=/home/reaperxl2/tools/linaro/bin/arm-cortex_a7-linux-gnueabihf-
+toolchain2=""
 config="green_machine_defconfig"
 kerneltype="zImage-dtb"
-jobcount="-j5"
+jobcount="-j4"
 ps=2048
 base=0x00000000
 ramdisk_offset=0x01000000
@@ -20,8 +20,8 @@ tags_offset=0x00000100
 cmdline="console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 vmalloc=400M utags.blkdev=/dev/block/platform/msm_sdcc.1/by-name/utags androidboot.write_protect=0 zcache androidboot.selinux=permissive"
 
 if [ "$1" = "local" ]; then
-	build=/home/yoshishapow/android_kernel_motorola_msm8226
-	toolchain=/home/yoshishapow/linaro_toolchain/bin/
+	build=/home/reaperxl2/android_kernel_motorola_msm8226
+	toolchain=/home/reaperxl2/tools/linaro/bin/arm-cortex_a7-linux-gnueabihf-
 fi
 
 rm -rf out
@@ -33,7 +33,7 @@ if [ -f ozip/boot.img ]; then
 	case "$cchoice" in
 		y|Y )
 			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
+			export CROSS_COMPILE=$toolchain
 			echo "  CLEAN   ozip"
 			rm -rf ozip/boot.img
 			rm -rf arch/arm/boot/"$kerneltype"
@@ -81,7 +81,7 @@ else
 	case "$achoice" in
 		y|Y )
 			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
+			export CROSS_COMPILE=$toolchain
 			if [ -f arch/arm/boot/"$kerneltype" ]; then
 				echo "  CLEAN   ozip"
 			fi
