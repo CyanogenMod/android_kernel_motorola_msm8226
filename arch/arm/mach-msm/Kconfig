@@ -520,7 +520,7 @@ config ARCH_MSM8226
 	select PM_DEVFREQ
 	select MSM_DEVFREQ_CPUBW
 	select MSM_PIL
-	select MSM_RUN_QUEUE_STATS
+	#select MSM_RUN_QUEUE_STATS
 	select ARM_HAS_SG_CHAIN
 	select REGULATOR
 	select MSM_RPM_REGULATOR_SMD
@@ -1905,6 +1905,7 @@ config MSM_DEVFREQ_CPUBW
 	select DEVFREQ_GOV_POWERSAVE
 	select DEVFREQ_GOV_USERSPACE
 	select DEVFREQ_GOV_MSM_CPUFREQ
+
 	default n
 	help
 	  Different devfreq governors use this devfreq device to make CPU to

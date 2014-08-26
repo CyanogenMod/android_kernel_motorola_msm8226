@@ -160,10 +160,9 @@ config ARM_TICKET_LOCKS
 
 config RWSEM_GENERIC_SPINLOCK
 	bool
-	default y
 
 config RWSEM_XCHGADD_ALGORITHM
-	bool
+	def_bool y
 
 config ARCH_HAS_ILOG2_U32
 	bool
@@ -1511,6 +1510,7 @@ config ARM_ERRATA_775420
 endmenu
 
 source "arch/arm/common/Kconfig"
+source "arch/arm/hotplug/Kconfig"
 
 menu "Bus support"
 

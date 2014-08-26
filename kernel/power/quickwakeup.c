@@ -1,17 +1,17 @@
 /* kernel/power/quickwakeup.c
- *
- * Copyright (C) 2014 Motorola Mobility LLC.
- *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
+*
+* Copyright (C) 2014 Motorola Mobility LLC.
+*
+* This software is licensed under the terms of the GNU General Public
+* License version 2, as published by the Free Software Foundation, and
+* may be copied, distributed, and modified under those terms.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*/
 
 #include <linux/kernel.h>
 #include <linux/list.h>
@@ -89,7 +89,7 @@ static int quickwakeup_execute(void)
 
 /* return 1 => suspend again
    return 0 => continue wakeup
- */
+*/
 bool quickwakeup_suspend_again(void)
 {
 	int ret = 0;

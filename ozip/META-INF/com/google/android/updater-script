@@ -1,0 +1,13 @@
+ui_print("                                 ");
+ui_print("              Paradoxed-PA Kernel       ");
+ui_print("                                 ");
+ui_print("                By YoshiShaPow          ");
+ui_print("                                 ");
+ui_print("    Pray it doesn't blow up your phone :P                ");
+package_extract_file("boot.img", "/dev/block/platform/msm_sdcc.1/by-name/boot");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
+delete_recursive("/system/lib/modules");
+package_extract_dir("system", "/system");
+set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
+symlink("/system/lib/modules/pronto/pronto_wlan.ko", "/system/lib/modules/wlan.ko");
+unmount("/system");
