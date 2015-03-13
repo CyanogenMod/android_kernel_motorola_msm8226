@@ -1081,8 +1081,8 @@ static ssize_t oom_score_adj_write(struct file *file, const char __user *buf,
 		goto err_sighand;
 	}
 
+        delete_from_adj_tree(task);
 	task->signal->oom_score_adj = oom_score_adj;
-	delete_from_adj_tree(task);
 	add_2_adj_tree(task);
 	if (has_capability_noaudit(current, CAP_SYS_RESOURCE))
 		task->signal->oom_score_adj_min = oom_score_adj;
