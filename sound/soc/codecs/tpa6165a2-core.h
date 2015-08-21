@@ -167,6 +167,13 @@ struct tpa6165_regs {
 	u8 value;
 };
 
+struct multi_button {
+	enum snd_jack_types type;
+	int keycode;
+	int min_r;
+	int max_r;
+};
+
 extern int tpa6165_hs_detect(struct snd_soc_codec *codec);
 
 extern void tpa6165_hp_event(int event);

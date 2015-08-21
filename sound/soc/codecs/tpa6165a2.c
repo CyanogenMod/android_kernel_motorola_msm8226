@@ -51,9 +51,10 @@
 
 #define TPA6165A2_JACK_MASK (SND_JACK_HEADSET | SND_JACK_HEADPHONE| \
 				SND_JACK_UNSUPPORTED)
-#define TPA6165A2_JACK_BUTTON_MASK (SND_JACK_BTN_0)
 
 #define VDD_UA_ON_LOAD	10000
+
+#define BTN_NUM_MAX		8
 
 static struct snd_soc_jack hs_jack;
 static struct snd_soc_jack button_jack;
@@ -74,6 +75,7 @@ struct tpa6165_data {
 	int hs_acc_type;
 	int inserted;
 	int button_pressed;
+	int multi_button_pressed;
 	int amp_state;
 	int mic_state;
 	int sleep_state;
@@ -153,6 +155,34 @@ static const struct tpa6165_regs tpa6165_reg_defaults[] = {
 {
 	.reg = TPA6165_ENABLE_REG1,
 	.value = 0xc0,
+},
+};
+
+/*
+ * The driver will use up to seven multi button.
+ * If more buttons are defined, these will be ignored.
+ * The button type is set at runtime.
+ */
+static struct multi_button multi_buttons[] = {
+{
+	.keycode = KEY_MEDIA,
+	.min_r = 0,
+	.max_r = 70,
+},
+{
+	.keycode = KEY_SEARCH,
+	.min_r = 110,
+	.max_r = 180,
+},
+{
+	.keycode = KEY_VOLUMEUP,
+	.min_r = 210,
+	.max_r = 290,
+},
+{
+	.keycode = KEY_VOLUMEDOWN,
+	.min_r = 360,
+	.max_r = 680,
 },
 };
 
@@ -833,93 +863,161 @@ static int tpa6165_get_hs_acc_type(struct tpa6165_data *tpa6165)
 	return acc_type;
 }
 
+static int tpa6165_detect_multi_button(struct tpa6165_data *tpa6165,
+				       enum snd_jack_types *button)
+{
+	u8 resistance;
+	u8 keyscan;
+	int ret;
+	int i;
+
+	ret = tpa6165_reg_read(tpa6165, TPA6165_MB_KEYSCAN_REG, &keyscan);
+	if (ret < 0) {
+		pr_err("%s: Could not read keyscan data register\n", __func__);
+		return ret;
+	}
+
+	resistance = keyscan & 0x7F;
+	if (keyscan & BIT(7))
+		resistance *= 4;
+
+	pr_debug("%s: Measured resistance: %d\n", __func__, resistance);
+
+	for (i = 0; i < ARRAY_SIZE(multi_buttons) && i < BTN_NUM_MAX; i++) {
+		if (resistance >= multi_buttons[i].min_r &&
+				resistance <= multi_buttons[i].max_r) {
+			*button = multi_buttons[i].type;
+			return 0;
+		}
+	}
+
+	pr_err("%s: Unknown button, R=%d\n", __func__, resistance);
+
+	return -EINVAL;
+}
+
 static void tpa6165_report_button(struct tpa6165_data *tpa6165)
 {
+	bool single_button =
+			!!(tpa6165->dev_status_reg1 & TPA6165_JACK_BUTTON);
+	bool multi_button =
+			!!(tpa6165->dev_status_reg2 & TPA6165_MULTI_BUTTON);
+	bool try_stop_detection = false;
+
 	if (tpa6165->mono_hs_detect_state)
 		/* ignore button presses in this state */
 		return;
 
-	if ((tpa6165->dev_status_reg1 & TPA6165_JACK_BUTTON)) {
-		/* if already in button detect state, check for
-		 * button press/release.
-		 */
-		if (tpa6165->button_detect_state) {
-			if (!(tpa6165->dev_status_reg2 & TPA6165_PRESS) &&
-						tpa6165->button_pressed) {
-				pr_debug("%s:report button release", __func__);
-				snd_soc_jack_report_no_dapm(
-					tpa6165->button_jack,
-					0, tpa6165->button_jack->jack->type);
+	if (!single_button && !multi_button)
+		/* not a button press, ignore */
+		return;
 
-				tpa6165->button_pressed = 0;
-				pr_debug("%s:turn off button det state",
-							__func__);
-				if ((tpa6165->amp_state ==
-						TPA6165_AMP_DISABLED) &&
-						(tpa6165->mic_state ==
-						TPA6165_MIC_DISABLED)) {
-					/* safe to trigger sleep state now */
-					if (tpa6165->alwayson_micb ||
-							tpa6165->special_hs)
-						tpa6165_sleep(tpa6165,
-							TPA6165_SPECIAL_SLEEP);
-					else
-						tpa6165_sleep(tpa6165,
-							TPA6165_SLEEP);
-				}
-				tpa6165_button_detect_state(tpa6165, 0);
-			} else if ((tpa6165->dev_status_reg2 & TPA6165_PRESS)
-					&& (!tpa6165->button_pressed)) {
-				pr_debug("%s:report button pressed",
-						__func__);
+	if (single_button && !tpa6165->button_detect_state) {
+		/* at this point not sure if it is single or
+		 * or multi, button event wake up the IC and
+		 * trigger button type detection register
+		 * sequence.this should trigger an interrupt
+		 * which should tell us if it is multibutton
+		 * or single button press.
+		 */
+		pr_debug("%s: Trigger button press detect state",
+					__func__);
+		tpa6165_sleep(tpa6165, TPA6165_WAKEUP);
+		tpa6165_button_detect_state(tpa6165, 1);
+
+		return;
+	}
+
+	if (single_button) {
+		if (!(tpa6165->dev_status_reg2 & TPA6165_PRESS) &&
+				tpa6165->button_pressed) {
+			pr_debug("%s: Report button release", __func__);
+			snd_soc_jack_report_no_dapm(
+				tpa6165->button_jack,
+				tpa6165->multi_button_pressed,
+				tpa6165->button_jack->jack->type);
+
+			tpa6165->button_pressed = 0;
+			try_stop_detection = true;
+		} else if ((tpa6165->dev_status_reg2 & TPA6165_PRESS) &&
+				!tpa6165->button_pressed) {
+			pr_debug("%s: Report button pressed",
+					__func__);
+			snd_soc_jack_report_no_dapm(
+				tpa6165->button_jack,
+				SND_JACK_BTN_0 | tpa6165->multi_button_pressed,
+				tpa6165->button_jack->jack->type);
+			tpa6165->button_pressed = SND_JACK_BTN_0;
+		} else {
+			if (tpa6165->dev_status_reg1 & TPA6165_VOL_SLEW_DONE) {
+				pr_err("%s: Unknown button state", __func__);
+				/* clear vol slew interrupt mask */
+				tpa6165_reg_write(tpa6165,
+					TPA6165_INT_MASK_REG1,
+					~TPA6165_VOL_SLEW_DONE,
+					TPA6165_VOL_SLEW_DONE);
+			}
+		}
+	} else if (multi_button) {
+		if (!(tpa6165->dev_status_reg2 & TPA6165_PRESS) &&
+				tpa6165->multi_button_pressed) {
+			pr_debug("%s: Report multi-button release", __func__);
+
+			snd_soc_jack_report_no_dapm(
+				tpa6165->button_jack,
+				tpa6165->button_pressed,
+				tpa6165->button_jack->jack->type);
+
+			tpa6165->multi_button_pressed = 0;
+			try_stop_detection = true;
+		} else if ((tpa6165->dev_status_reg2 & TPA6165_PRESS) &&
+				!tpa6165->multi_button_pressed) {
+			enum snd_jack_types button;
+			int ret;
+
+			pr_debug("%s: Report multi button pressed",
+				 __func__);
+
+			ret = tpa6165_detect_multi_button(tpa6165, &button);
+			if (ret < 0) {
+				/* Invalid button, stop detection */
+				try_stop_detection = true;
+			} else {
+				tpa6165->multi_button_pressed = button;
 				snd_soc_jack_report_no_dapm(
 					tpa6165->button_jack,
-					SND_JACK_BTN_0,
+					button | tpa6165->button_pressed,
 					tpa6165->button_jack->jack->type);
-				tpa6165->button_pressed = 1;
-			} else {
-				if (tpa6165->dev_status_reg1 &
-						TPA6165_VOL_SLEW_DONE) {
-					pr_err("%s:Unknown button state",
-						__func__);
-					/* clear vol slew interrupt mask */
-					tpa6165_reg_write(tpa6165,
-						TPA6165_INT_MASK_REG1,
-						~TPA6165_VOL_SLEW_DONE,
-						TPA6165_VOL_SLEW_DONE);
-				}
 			}
 		} else {
-			/* at this point not sure if it is single or
-			 * or multi, button event wake up the IC and
-			 * trigger button type detection register
-			 * sequence.this should trigger an interrupt
-			 * which should tell us if it is multibutton
-			 * or single button press.
-			 */
-			pr_debug("%s:trigger button press detect state",
-						__func__);
-			tpa6165_sleep(tpa6165, TPA6165_WAKEUP);
-			tpa6165_button_detect_state(tpa6165, 1);
-		}
-	} else if (tpa6165->dev_status_reg2 & TPA6165_MULTI_BUTTON) {
-		/* it is passive multibutton press not supported now
-		 * in android, so nothing report here. Just put the.
-		 * IC back in sleep.
-		 */
-		pr_debug("%s:multi button press detected", __func__);
-		if (tpa6165->button_detect_state &&
-				tpa6165->amp_state == TPA6165_AMP_DISABLED &&
-				tpa6165->mic_state == TPA6165_MIC_DISABLED) {
-			pr_debug("%s:turn off button det", __func__);
-			if (tpa6165->alwayson_micb || tpa6165->special_hs)
-					tpa6165_sleep(tpa6165,
-						TPA6165_SPECIAL_SLEEP);
-				else
-					tpa6165_sleep(tpa6165, TPA6165_SLEEP);
-				tpa6165_button_detect_state(tpa6165, 0);
+			if (tpa6165->dev_status_reg1 & TPA6165_VOL_SLEW_DONE) {
+				pr_err("%s: Unknown button state", __func__);
+				/* clear vol slew interrupt mask */
+				tpa6165_reg_write(tpa6165,
+					TPA6165_INT_MASK_REG1,
+					~TPA6165_VOL_SLEW_DONE,
+					TPA6165_VOL_SLEW_DONE);
+			}
 		}
 	}
+
+	if (try_stop_detection &&
+			!tpa6165->multi_button_pressed &&
+			!tpa6165->button_pressed) {
+		pr_debug("%s: Turn off button det state\n", __func__);
+		tpa6165_button_detect_state(tpa6165, 0);
+
+		if ((tpa6165->amp_state == TPA6165_AMP_DISABLED) &&
+				(tpa6165->mic_state == TPA6165_MIC_DISABLED)) {
+			pr_debug("%s: Sleep", __func__);
+			/* safe to trigger sleep state now */
+			if (tpa6165->alwayson_micb || tpa6165->special_hs)
+				tpa6165_sleep(tpa6165, TPA6165_SPECIAL_SLEEP);
+			else
+				tpa6165_sleep(tpa6165, TPA6165_SLEEP);
+		}
+	}
+
 }
 
 static int tpa6165_report_hs(struct tpa6165_data *tpa6165)
@@ -947,9 +1045,10 @@ static int tpa6165_report_hs(struct tpa6165_data *tpa6165)
 		snd_soc_jack_report_no_dapm(tpa6165->hs_jack, 0,
 					tpa6165->hs_jack->jack->type);
 		/* check if button pressed when jack removed */
-		if (tpa6165->button_pressed) {
+		if (tpa6165->button_pressed || tpa6165->multi_button_pressed) {
 			/* report button released */
 			tpa6165->button_pressed = 0;
+			tpa6165->multi_button_pressed = 0;
 			snd_soc_jack_report_no_dapm(tpa6165->button_jack,
 				0, tpa6165->button_jack->jack->type);
 		}
@@ -1256,7 +1355,10 @@ static const struct snd_kcontrol_new tpa6165_controls[] = {
 
 int tpa6165_hs_detect(struct snd_soc_codec *codec)
 {
+	int jack_button_mask = SND_JACK_BTN_0;
 	int ret = -EINVAL;
+	int i;
+
 	if (tpa6165_client) {
 		struct tpa6165_data *tpa6165 =
 					i2c_get_clientdata(tpa6165_client);
@@ -1275,9 +1377,15 @@ int tpa6165_hs_detect(struct snd_soc_codec *codec)
 		}
 		tpa6165->hs_jack = &hs_jack;
 
+		for (i = 0; i < ARRAY_SIZE(multi_buttons) && i < BTN_NUM_MAX; i++) {
+			int type = SND_JACK_BTN_0 >> (i + 1);
+			jack_button_mask |= type;
+			multi_buttons[i].type = type;
+		}
+
 		if (tpa6165->button_jack == NULL) {
 			ret = snd_soc_jack_new(codec, "Button Jack",
-					       TPA6165A2_JACK_BUTTON_MASK,
+					       jack_button_mask,
 					       &button_jack);
 			if (ret) {
 				pr_err("Failed to create new jack\n");
@@ -1285,11 +1393,23 @@ int tpa6165_hs_detect(struct snd_soc_codec *codec)
 			}
 		}
 		tpa6165->button_jack = &button_jack;
+
 		ret = snd_jack_set_key(tpa6165->button_jack->jack,
 			       SND_JACK_BTN_0, KEY_MEDIA);
 		if (ret) {
 			pr_err("%s: Failed to set code for btn-0\n", __func__);
 			return ret;
+		}
+
+		for (i = 0; i < ARRAY_SIZE(multi_buttons) && i < BTN_NUM_MAX; i++) {
+			ret = snd_jack_set_key(tpa6165->button_jack->jack,
+					multi_buttons[i].type,
+					multi_buttons[i].keycode);
+			if (ret) {
+				pr_err("%s: Failed to set code for btn-%d\n",
+				       __func__, i + 1);
+				return ret;
+			}
 		}
 
 		/* add controls */
@@ -1491,6 +1611,7 @@ static int __devinit tpa6165_probe(struct i2c_client *client,
 	tpa6165->gpio = tpa6165_pdata->irq_gpio;
 	tpa6165->inserted = 0;
 	tpa6165->button_pressed = 0;
+	tpa6165->multi_button_pressed = 0;
 	tpa6165->button_jack = NULL;
 	tpa6165->hs_jack = NULL;
 	/* This flag is used to indicate that mic bias should be always
