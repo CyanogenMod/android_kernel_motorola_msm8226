@@ -366,6 +366,7 @@ struct inode_operations {
 	void (*truncate_range)(struct inode *, loff_t, loff_t);
 	struct file *(*open) (struct dentry *, struct file *,
 			      const struct cred *);
+	void (*update_time)(struct inode *, struct timespec *, int);
 };
 
 Again, all methods are called without any locks being held, unless
@@ -483,6 +484,9 @@ otherwise noted.
 	for stacking filesystems which want to allow native I/O directly on
 	underlying files.
 
+  update_time: called by the VFS to update a specific time or the i_version of
+  	an inode.  If this is not defined the VFS will update the inode itself
+  	and call mark_inode_dirty_sync.
 
 The Address Space Object
 ========================
