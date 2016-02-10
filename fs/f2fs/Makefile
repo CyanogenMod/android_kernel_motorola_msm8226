@@ -8,3 +8,8 @@ f2fs-$(CONFIG_F2FS_FS_POSIX_ACL) += acl.o
 f2fs-$(CONFIG_F2FS_IO_TRACE) += trace.o
 f2fs-$(CONFIG_F2FS_FS_ENCRYPTION) += crypto_policy.o crypto.o \
 		crypto_key.o crypto_fname.o
+
+F2FS_SHA1 := $(shell cd $(KBUILD_SRC); git rev-list -1 HEAD fs/f2fs 2>/dev/null)
+ifneq ($(strip $(F2FS_SHA1)),)
+	ccflags-y += -DF2FS_SHA1=\"$(F2FS_SHA1)\"
+endif

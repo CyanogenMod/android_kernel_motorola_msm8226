@@ -1371,6 +1371,15 @@ static void destroy_inodecache(void)
 	kmem_cache_destroy(f2fs_inode_cachep);
 }
 
+#ifdef F2FS_SHA1
+static ssize_t f2fs_sha1_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, F2FS_SHA1"\n");
+}
+static struct device_attribute f2fs_sha1_attr = __ATTR_RO(f2fs_sha1);
+#endif
+
 static int __init init_f2fs_fs(void)
 {
 	int err;
@@ -1405,6 +1414,12 @@ static int __init init_f2fs_fs(void)
 		goto free_crypto;
 	f2fs_create_root_stats();
 	f2fs_proc_root = proc_mkdir("fs/f2fs", NULL);
+
+#ifdef F2FS_SHA1
+	err = sysfs_create_file(&f2fs_kset->kobj, &f2fs_sha1_attr.attr);
+	if (err)
+		pr_warn("Could not create f2fs_sha1 sysfs entry\n");
+#endif
 	return 0;
 
 free_crypto:
@@ -1427,6 +1442,9 @@ fail:
 
 static void __exit exit_f2fs_fs(void)
 {
+#ifdef F2FS_SHA1
+	sysfs_remove_file(&f2fs_kset->kobj, &f2fs_sha1_attr.attr);
+#endif
 	remove_proc_entry("fs/f2fs", NULL);
 	f2fs_destroy_root_stats();
 	unregister_filesystem(&f2fs_fs_type);
