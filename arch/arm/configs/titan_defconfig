@@ -45,9 +45,12 @@ CONFIG_INIT_ENV_ARG_LIMIT=32
 CONFIG_CROSS_COMPILE=""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CONFIG_LOCALVERSION=""
 CONFIG_LOCALVERSION_AUTO=y
 =======
+=======
+>>>>>>> 2f1b2ea... Bump to R25 !
 =======
 >>>>>>> 2f1b2ea... Bump to R25 !
 CONFIG_LOCALVERSION="HalogenKernel-R25"
